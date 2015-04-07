@@ -1,6 +1,6 @@
 package zpbd.paxos
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{Props, ActorSystem}
 import zpbd.paxos.Paxos.Init
 import zpbd.paxos.actors.{Acceptor, Proposer}
 
@@ -9,11 +9,10 @@ import zpbd.paxos.actors.{Acceptor, Proposer}
  */
 object App extends App{
   val system = ActorSystem("MyActorSystem")
-  val proposer = system.actorOf(Proposer.props, "proposer")
   //val learner = system.actorOf(Learner.props, "learner")
-  val acceptors = for (i <- 0 until 10) yield system.actorOf(Props[Acceptor], name = s"acceptor-$i")
+  val acceptors = {for (i <- 0 until 4) yield system.actorOf(Acceptor.props, name = s"acceptor-$i")}.toSet
+  val proposer = system.actorOf(Props(new Proposer(0, acceptors)), "proposer")
 
   proposer ! Init("Hello")
 
-  system.awaitTermination()
 }
